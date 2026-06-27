@@ -409,18 +409,14 @@ function isAppleMobile(){
 function downloadICS(text, filename){
   const blob = new Blob([text], {type:'text/calendar;charset=utf-8'});
   const url = URL.createObjectURL(blob);
-  // ユーザー操作中に同期的に <a> をクリック（ポップアップブロック回避）
-  const a = document.createElement('a');
-  a.href = url;
   if(isAppleMobile()){
-    a.target = '_blank';       // iPhone/iPadはカレンダー取り込み画面で開く
-    a.rel = 'noopener';
-  } else {
-    a.download = filename;      // PC/Androidはダウンロード
+    // iPhone/iPad: 同じタブでblobを開く（新規タブはブロックされるため）。Safariがカレンダー取込画面を表示
+    window.location.href = url;
+    return;
   }
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 20000);
 }
 
