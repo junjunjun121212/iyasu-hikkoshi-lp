@@ -398,17 +398,19 @@ function isAppleMobile(){
 function downloadICS(text, filename){
   const blob = new Blob([text], {type:'text/calendar;charset=utf-8'});
   const url = URL.createObjectURL(blob);
-  if(isAppleMobile()){
-    // iPhone/iPad: 新規タブでカレンダーに渡す（ダウンロード属性が効かないため）
-    const w = window.open(url, '_blank');
-    if(!w){ window.location.href = url; }
-    setTimeout(() => URL.revokeObjectURL(url), 15000);
-    return;
-  }
+  // ユーザー操作中に同期的に <a> をクリック（ポップアップブロック回避）
   const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  a.href = url;
+  if(isAppleMobile()){
+    a.target = '_blank';       // iPhone/iPadはカレンダー取り込み画面で開く
+    a.rel = 'noopener';
+  } else {
+    a.download = filename;      // PC/Androidはダウンロード
+  }
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 20000);
 }
 
 /* ============ 描画 ============ */
